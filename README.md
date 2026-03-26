@@ -4,7 +4,7 @@
 
 本模块作用是 **修改刺猬猫（欢乐书客）的夜间模式配色**：
 - 可以在模块里自定义配色
-- 也可以使用默认的黑底白字
+- 可以使用默认黑底（#000000）白字（#FFFFFF）配色
 
 > ⚠️ 建议搭配 [拒绝强制亮度](https://github.com/Xposed-Modules-Repo/com.fankes.refusebrightness) 使用。
 
