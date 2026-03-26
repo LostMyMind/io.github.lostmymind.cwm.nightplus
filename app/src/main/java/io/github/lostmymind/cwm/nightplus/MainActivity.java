@@ -5,6 +5,7 @@ import android.app.UiModeManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputFilter;
@@ -20,8 +21,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 /**
- * 调色界面
- * 支持跟随系统夜间模式，支持手动输入颜色值
+ * API 101 调色界面
+ * 使用普通SharedPreferences + LSPosed RemotePreferences
  */
 public class MainActivity extends Activity {
     
@@ -63,6 +64,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
+        // API 101: 使用MODE_WORLD_READABLE，LSPosed会自动处理
         try {
             prefs = getSharedPreferences(PREF_NAME, Context.MODE_WORLD_READABLE);
         } catch (SecurityException e) {
@@ -145,7 +147,7 @@ public class MainActivity extends Activity {
         rootLayout = root;
         
         TextView title = new TextView(this);
-        title.setText("刺猬猫夜间模式调色");
+        title.setText("刺猬猫夜间模式调色 v2.0");
         title.setTextSize(20);
         title.setGravity(Gravity.CENTER);
         title.setPadding(0, 0, 0, 30);
@@ -331,7 +333,6 @@ public class MainActivity extends Activity {
         et.setTextSize(16);
         et.setSingleLine(true);
         
-        // 过滤器：允许 # 和十六进制字符
         InputFilter hexFilter = new InputFilter() {
             @Override
             public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
@@ -348,12 +349,8 @@ public class MainActivity extends Activity {
         et.setFilters(new InputFilter[]{hexFilter, new InputFilter.LengthFilter(7)});
         
         et.addTextChangedListener(new TextWatcher() {
-            private String beforeText = "";
-            
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                beforeText = s.toString();
-            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {}
@@ -364,7 +361,6 @@ public class MainActivity extends Activity {
                 
                 String text = s.toString();
                 
-                // 确保 # 在开头
                 if (text.isEmpty()) {
                     isUpdatingFromCode = true;
                     s.append('#');
@@ -379,7 +375,6 @@ public class MainActivity extends Activity {
                     return;
                 }
                 
-                // 检查是否是有效的十六进制
                 if (text.length() == 7) {
                     String hex = text.substring(1);
                     if (hex.matches("[0-9A-Fa-f]{6}")) {
@@ -397,7 +392,6 @@ public class MainActivity extends Activity {
             }
         });
         
-        // 失去焦点时补全
         et.setOnFocusChangeListener((v, hasFocus) -> {
             if (!hasFocus && !isUpdatingFromCode) {
                 String text = et.getText().toString();
@@ -407,7 +401,6 @@ public class MainActivity extends Activity {
                 et.setText("#" + hex.toUpperCase());
                 isUpdatingFromCode = false;
                 
-                // 更新颜色
                 if (hex.matches("[0-9A-Fa-f]{6}")) {
                     int color = 0xFF000000 | Integer.parseInt(hex, 16);
                     if (et == bgHexEdit) {

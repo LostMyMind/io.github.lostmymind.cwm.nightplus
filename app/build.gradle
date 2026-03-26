@@ -8,10 +8,10 @@ android {
 
     defaultConfig {
         applicationId "io.github.lostmymind.cwm.nightplus"
-        minSdk 24
+        minSdk 26
         targetSdk 34
-        versionCode 115
-        versionName "1.1.5"
+        versionCode 120
+        versionName "1.2.0"
     }
 
     buildTypes {
@@ -21,11 +21,12 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 }
 
 dependencies {
-    compileOnly 'de.robv.android.xposed:api:82'
+    // libxposed API 101
+    compileOnly files('libs/api-101.0.0.aar')
 }

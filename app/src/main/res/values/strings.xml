@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">刺猬猫夜间调色</string>
+    <string name="app_name">刺猬猫夜间模式增强</string>
+    <string name="module_desc">Hook刺猬猫夜间模式配色，支持自定义背景和文字颜色</string>
 </resources>
