@@ -4,7 +4,7 @@ plugins {
 
 android {
     namespace 'io.github.lostmymind.cwm.nightplus'
-    compileSdk 34
+    compileSdk 36
 
     defaultConfig {
         applicationId "io.github.lostmymind.cwm.nightplus"
@@ -28,5 +28,8 @@ android {
 
 dependencies {
     // libxposed API 101
-    compileOnly files('libs/api-101.0.0.aar')
+    compileOnly("io.github.libxposed:api:101.0.0")
+    
+    // libxposed service (用于RemotePreferences写入)
+    implementation("io.github.libxposed:service:101.0.0")
 }

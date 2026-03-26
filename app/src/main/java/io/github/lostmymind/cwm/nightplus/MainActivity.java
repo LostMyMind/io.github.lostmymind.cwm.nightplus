@@ -20,11 +20,14 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import io.github.libxposed.service.XposedService;
+import io.github.libxposed.service.XposedServiceHelper;
+
 /**
  * API 101 调色界面
- * 使用普通SharedPreferences + LSPosed RemotePreferences
+ * 使用RemotePreferences进行配置共享
  */
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements XposedServiceHelper.OnServiceListener {
     
     private static final String PREF_NAME = "color_config";
     
@@ -48,6 +51,7 @@ public class MainActivity extends Activity {
     
     private SharedPreferences prefs;
     private LinearLayout rootLayout;
+    private XposedService xposedService;
     
     private static final int DARK_BG = 0xFF1A1A1A;
     private static final int DARK_TEXT = 0xFFE0E0E0;
@@ -64,13 +68,36 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        // API 101: 使用MODE_WORLD_READABLE，LSPosed会自动处理
+        XposedServiceHelper.registerListener(this);
+        prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        loadConfig();
+        setContentView(createUI());
+    }
+    
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+    
+    @Override
+    public void onServiceBind(XposedService service) {
+        this.xposedService = service;
         try {
-            prefs = getSharedPreferences(PREF_NAME, Context.MODE_WORLD_READABLE);
-        } catch (SecurityException e) {
-            prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+            prefs = service.getRemotePreferences(PREF_NAME);
+            loadConfig();
+            updateDisplay();
+        } catch (Throwable t) {
         }
-        
+    }
+    
+    @Override
+    public void onServiceDied(XposedService service) {
+        this.xposedService = null;
+        prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+    }
+    
+    private void loadConfig() {
+        if (prefs == null) return;
         String savedBg = prefs.getString("bg_color", "000000");
         String savedText = prefs.getString("text_color", "FFFFFF");
         if (savedBg.matches("[0-9A-Fa-f]{6}")) {
@@ -79,8 +106,6 @@ public class MainActivity extends Activity {
         if (savedText.matches("[0-9A-Fa-f]{6}")) {
             textColor = 0xFF000000 | Integer.parseInt(savedText, 16);
         }
-        
-        setContentView(createUI());
     }
     
     @Override
@@ -147,7 +172,7 @@ public class MainActivity extends Activity {
         rootLayout = root;
         
         TextView title = new TextView(this);
-        title.setText("刺猬猫夜间模式调色 v2.0");
+        title.setText("刺猬猫夜间模式调色 v1.2.0");
         title.setTextSize(20);
         title.setGravity(Gravity.CENTER);
         title.setPadding(0, 0, 0, 30);
