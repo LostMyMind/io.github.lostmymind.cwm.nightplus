@@ -331,26 +331,30 @@ public class MainActivity extends Activity {
         et.setText("#" + initialValue);
         et.setTextSize(16);
         et.setSingleLine(true);
-        et.setAllCaps(true);
         
-        InputFilter filter = new InputFilter() {
+        // 过滤器：允许 # 和十六进制字符
+        InputFilter hexFilter = new InputFilter() {
             @Override
             public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
                 StringBuilder sb = new StringBuilder();
                 for (int i = start; i < end; i++) {
-                    char c = source.charAt(i);
-                    if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f')) {
-                        sb.append(Character.toUpperCase(c));
+                    char c = Character.toUpperCase(source.charAt(i));
+                    if (c == '#' || (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')) {
+                        sb.append(c);
                     }
                 }
                 return sb;
             }
         };
-        et.setFilters(new InputFilter[]{filter, new InputFilter.LengthFilter(7)});
+        et.setFilters(new InputFilter[]{hexFilter, new InputFilter.LengthFilter(7)});
         
         et.addTextChangedListener(new TextWatcher() {
+            private String beforeText = "";
+            
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                beforeText = s.toString();
+            }
             
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {}
@@ -361,39 +365,59 @@ public class MainActivity extends Activity {
                 
                 String text = s.toString();
                 
-                if (!text.startsWith("#")) {
+                // 确保 # 在开头
+                if (text.isEmpty()) {
+                    isUpdatingFromCode = true;
+                    s.append('#');
+                    isUpdatingFromCode = false;
+                    return;
+                }
+                
+                if (text.charAt(0) != '#') {
                     isUpdatingFromCode = true;
                     s.insert(0, "#");
                     isUpdatingFromCode = false;
                     return;
                 }
                 
-                String hex = text.substring(1);
-                if (hex.length() == 6 && hex.matches("[0-9A-Fa-f]{6}")) {
+                // 检查是否是有效的十六进制
+                if (text.length() == 7) {
+                    String hex = text.substring(1);
+                    if (hex.matches("[0-9A-Fa-f]{6}")) {
+                        int color = 0xFF000000 | Integer.parseInt(hex, 16);
+                        if (et == bgHexEdit) {
+                            bgColor = color;
+                            bgPreview.setBackgroundColor(color);
+                        } else {
+                            textColor = color;
+                            textPreview.setBackgroundColor(color);
+                        }
+                        setSeekBar(color);
+                    }
+                }
+            }
+        });
+        
+        // 失去焦点时补全
+        et.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus && !isUpdatingFromCode) {
+                String text = et.getText().toString();
+                String hex = text.length() > 1 ? text.substring(1) : "";
+                while (hex.length() < 6) hex = hex + "0";
+                isUpdatingFromCode = true;
+                et.setText("#" + hex.toUpperCase());
+                isUpdatingFromCode = false;
+                
+                // 更新颜色
+                if (hex.matches("[0-9A-Fa-f]{6}")) {
                     int color = 0xFF000000 | Integer.parseInt(hex, 16);
-                    EditText currentEdit = (et == bgHexEdit) ? bgHexEdit : textHexEdit;
-                    if (currentEdit == bgHexEdit) {
+                    if (et == bgHexEdit) {
                         bgColor = color;
                         bgPreview.setBackgroundColor(color);
                     } else {
                         textColor = color;
                         textPreview.setBackgroundColor(color);
                     }
-                    setSeekBar(color);
-                }
-            }
-        });
-        
-        et.setOnFocusChangeListener((v, hasFocus) -> {
-            if (!hasFocus) {
-                String text = et.getText().toString();
-                if (!text.startsWith("#")) {
-                    et.setText("#" + text);
-                }
-                String hex = et.getText().toString().substring(1);
-                if (hex.length() < 6) {
-                    while (hex.length() < 6) hex = "0" + hex;
-                    et.setText("#" + hex);
                 }
             }
         });
