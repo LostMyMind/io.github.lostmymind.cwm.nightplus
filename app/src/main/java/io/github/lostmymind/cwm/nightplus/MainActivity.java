@@ -5,7 +5,6 @@ import android.app.UiModeManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputFilter;
@@ -172,7 +171,7 @@ public class MainActivity extends Activity implements XposedServiceHelper.OnServ
         rootLayout = root;
         
         TextView title = new TextView(this);
-        title.setText("刺猬猫夜间模式调色 v1.2.0");
+        title.setText("刺猬猫夜间模式调色");
         title.setTextSize(20);
         title.setGravity(Gravity.CENTER);
         title.setPadding(0, 0, 0, 30);

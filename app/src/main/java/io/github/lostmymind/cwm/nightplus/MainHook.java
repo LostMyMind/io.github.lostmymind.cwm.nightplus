@@ -20,7 +20,6 @@ public class MainHook extends XposedModule {
 
     private static final String TARGET = "com.kuangxiangciweimao.novel";
     private static final String PREF = "color_config";
-    
     private static int bgColor = Color.BLACK;
     private static int bgColorBright = Color.BLACK;
     private static int textColor = Color.WHITE;
